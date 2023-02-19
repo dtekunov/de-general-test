@@ -3,6 +3,7 @@
  */
 package com.di
 
+import com.di.input.KeyValuePair
 import com.di.logic.Evaluation
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.{Level, LogManager, Logger}
@@ -29,14 +30,39 @@ class AppSuite extends AnyFunSuite with Matchers {
 
   import spark.implicits._
 
+  test("All Algorithms should work correctly on a base case") {
+    val values = Seq(
+      (1, 2),
+      (1, 3),
+      (1, 3),
+      (2, 4),
+      (2, 4),
+      (2, 4)
+    ).toDF("key", "value")
 
-  test("lala") {
+    val (result1, result2) = {
+      val evaluation = new Evaluation
+
+      (evaluation.algorithmV1(values).collect(), evaluation.algorithmV2(values).collect())
+    }
+
+    result1 must contain theSameElementsAs result2
+    result1 must contain theSameElementsAs Array(KeyValuePair(1, 2), KeyValuePair(2, 4))
+  }
+
+  test("All Algorithms should work correctly with a random input") {
     val values = TestValuesGenerator.generateRandomTestInput
 
     val evaluation = new Evaluation
 
-    val result = evaluation.algorithmV2(values.allValues.toDF("key", "value")).collect()
+    val (result1, result2) = {
+      val evaluation = new Evaluation
 
-    result must contain theSameElementsAs values.valuesToFind
+      (evaluation.algorithmV1(values.allValues.toDF("key", "value")).collect(),
+        evaluation.algorithmV2(values.allValues.toDF("key", "value")).collect())
+    }
+
+    result1 must contain theSameElementsAs values.valuesToFind
+    result1 must contain theSameElementsAs result2
   }
 }

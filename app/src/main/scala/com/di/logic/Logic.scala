@@ -14,7 +14,7 @@ object Logic {
       acc.updated(elem, oldValue + 1)
     }
       .find(pair => pair._2 % 2 != 0)
-      .get //.get is safe here, because it is guaranteed to have at least one odd number
+      .get //.get used here, because it is guaranteed to have at least one odd number
       ._1
   }
 
@@ -34,7 +34,6 @@ object Logic {
       acc1 ++ acc2.map { case (key, numberOfOccurrences) => key -> (numberOfOccurrences + acc1.getOrElse(key, 0)) }
     }
 
-    // We use .get here, because it is GUARANTEED that there exists at least one such value
     def finish(reductionResult: AggregateAccumulator): Map[Int, Int] =
       reductionResult
         .filter(elem => elem._2 % 2 != 0)

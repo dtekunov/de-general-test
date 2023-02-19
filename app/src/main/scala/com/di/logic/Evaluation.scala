@@ -7,14 +7,28 @@ import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 class Evaluation(implicit spark: SparkSession) {
   import spark.implicits._
 
-  def algorithmV1(dataset: Dataset[Row]): DataFrame =
+  /**
+   * This implementation can be divided into two parts:
+   *
+   * 1) GroupByKey part, which is parallelizable and has O(N) time complexity,
+   *  but VERY ineffective, since it requires shuffling partitions
+   *
+   *  2) HashMap-based algorithm, which has O(N) time complexity and O(N) space complexity
+   *  (does not require shuffling partitions)
+   */
+  def algorithmV1(dataset: Dataset[Row]): Dataset[KeyValuePair]  =
     dataset
       .as[(Int, Int)]
       .rdd
       .groupByKey()
       .map { elem => elem._1 -> findNumberOccuringOddTimes(elem._2)}
-      .toDF()
+      .toDF("key", "value")
+      .as[KeyValuePair]
 
+  /**
+   * Another approach using AggregateFunction with similar, O(N) complexity, but not that heavy,
+   * since data shuffling is not applied
+   */
   def algorithmV2(dataset: Dataset[Row]): Dataset[KeyValuePair] = {
     val typedDataset = dataset.as[KeyValuePair]
 

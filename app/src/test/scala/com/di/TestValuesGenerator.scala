@@ -7,6 +7,16 @@ import scala.util.Random.shuffle
 
 case class GeneratedValues(valuesToFind: Seq[KeyValuePair], allValues: Seq[(Int, Int)])
 
+
+/**
+ * Test object to perform random-based unit-tests
+ *
+ * returns [[GeneratedValues]], which has:
+ *
+ * allValues - generated sample
+ *
+ * valuesToFind - expected result for a given sample
+ */
 object TestValuesGenerator {
   private val rand = new scala.util.Random
   private var nonRepeatingList = shuffle((1 to 10000).toVector).to(ArrayBuffer)
@@ -31,7 +41,7 @@ object TestValuesGenerator {
   }
 
   private def generateValueNTimes(key: Int, whichValueToGenerate: Int) = {
-    val howManyTimes = rand.nextInt(3) //todo: adjust
+    val howManyTimes = rand.nextInt(7) //todo: adjust
     (0 to howManyTimes).map(_ => (key, whichValueToGenerate))
   }
 
