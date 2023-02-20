@@ -19,11 +19,11 @@ case class GeneratedValues(valuesToFind: Seq[KeyValuePair], allValues: Seq[(Int,
  */
 object TestValuesGenerator {
   private val rand = new scala.util.Random
-  private var nonRepeatingList = shuffle((1 to 10000).toVector).to(ArrayBuffer)
+  private val nonRepeatingList = shuffle((1 to 10000).toVector).to(ArrayBuffer)
 
   def generateRandomTestInput: GeneratedValues = {
-    val keys = (1 to 9)
-    keys.foldLeft(GeneratedValues(Seq.empty[KeyValuePair], Seq.empty[(Int, Int)])){ (acc, key) =>
+    val keys = 1 to 9
+    keys.foldLeft(GeneratedValues(Seq.empty[KeyValuePair], Seq.empty[(Int, Int)])) { (acc, key) =>
       val numberToGenerateOddTimes = nonRepeatingList.remove(0)
       val numberToGenerateEvenTimes = nonRepeatingList.remove(0)
       val valuesToAdd = {
@@ -41,7 +41,7 @@ object TestValuesGenerator {
   }
 
   private def generateValueNTimes(key: Int, whichValueToGenerate: Int) = {
-    val howManyTimes = rand.nextInt(7) //todo: adjust
+    val howManyTimes = rand.nextInt(7) //adjust for a greater sample size
     (0 to howManyTimes).map(_ => (key, whichValueToGenerate))
   }
 

@@ -33,7 +33,7 @@ class IO(isS3: Boolean)(implicit spark: SparkSession) {
     val dfToRead = spark.read
       .option("sep", separator)
       .option("header", "true")
-      .option("inferSchema","true")
+      .option("inferSchema", "true")
       .csv(s"$pathToDirectory/*.$format")
 
     val headers = dfToRead.schema.fieldNames

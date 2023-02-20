@@ -3,20 +3,18 @@
  */
 package com.di
 
-import com.di.io.{IO, KeyValuePair}
+import com.di.io.KeyValuePair
 import com.di.logic.Evaluation
-import org.apache.log4j.{Level, LogManager, Logger}
 import org.apache.spark.SparkException
 import org.apache.spark.sql.SparkSession
-import org.scalatest.funsuite.AnyFunSuite
 import org.junit.runner.RunWith
+import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class AppSuite extends AnyFunSuite with Matchers {
-  val logger: Logger = LogManager.getRootLogger
-  logger.setLevel(Level.WARN)
+
   import AppSuite._
   import spark.implicits._
 
@@ -37,13 +35,13 @@ class AppSuite extends AnyFunSuite with Matchers {
     val evaluation = new Evaluation
 
     assertThrows[SparkException] {
-        evaluation.algorithmV1(invalidValues).collect()
+      evaluation.algorithmV1(invalidValues).collect()
     }
   }
 
   test("All Algorithms should work correctly with a random input") {
 
-    for (_ <- 1 to 3) { // just to be sure  inn consistency, we run this test several times
+    for (_ <- 1 to 3) { // just to be sure in consistency, we run this test several times
       val values = TestValuesGenerator.generateRandomTestInput
 
       val (result1, result2, result3) = {
