@@ -1,6 +1,6 @@
 package com.di
 
-import com.di.input.KeyValuePair
+import com.di.io.KeyValuePair
 
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random.shuffle

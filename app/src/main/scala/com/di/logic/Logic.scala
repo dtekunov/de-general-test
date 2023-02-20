@@ -1,6 +1,6 @@
 package com.di.logic
 
-import com.di.input.KeyValuePair
+import com.di.io.KeyValuePair
 import org.apache.spark.sql.Encoder
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
 import org.apache.spark.sql.expressions.Aggregator

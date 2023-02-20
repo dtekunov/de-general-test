@@ -3,10 +3,11 @@
  */
 package com.di
 
-import com.di.input.KeyValuePair
+import com.di.io.KeyValuePair
 import com.di.logic.Evaluation
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.{Level, LogManager, Logger}
+import org.apache.spark.SparkException
 import org.apache.spark.sql.SparkSession
 import org.scalatest.funsuite.AnyFunSuite
 import org.junit.runner.RunWith
@@ -50,10 +51,20 @@ class AppSuite extends AnyFunSuite with Matchers {
     result1 must contain theSameElementsAs Array(KeyValuePair(1, 2), KeyValuePair(2, 4))
   }
 
+  test("All Algorithms should fail on non-valid data") {
+    val values = Seq(
+      (1, 2),
+      (1, 2),
+    ).toDF("key", "value")
+    val evaluation = new Evaluation
+
+    assertThrows[SparkException] {
+        evaluation.algorithmV1(values).collect()
+    }
+  }
+
   test("All Algorithms should work correctly with a random input") {
     val values = TestValuesGenerator.generateRandomTestInput
-
-    val evaluation = new Evaluation
 
     val (result1, result2) = {
       val evaluation = new Evaluation

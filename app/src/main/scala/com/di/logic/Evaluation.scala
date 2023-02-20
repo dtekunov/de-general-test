@@ -1,6 +1,6 @@
 package com.di.logic
 
-import com.di.input.KeyValuePair
+import com.di.io.KeyValuePair
 import com.di.logic.Logic.findNumberOccuringOddTimes
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 

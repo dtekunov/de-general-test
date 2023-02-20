@@ -14,7 +14,6 @@ dependencies {
     implementation("com.github.pureconfig:pureconfig_2.13:0.17.1")
     implementation("com.github.scopt:scopt_2.13:4.0.0")
 
-
     implementation("com.google.guava:guava:30.1.1-jre")
 
     testImplementation("junit:junit:4.13.2")
