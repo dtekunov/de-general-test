@@ -1,7 +1,7 @@
 package com.di.logic
 
 import com.di.io.KeyValuePair
-import com.di.logic.Logic.findNumberOccuringOddTimes
+import com.di.logic.Logic.{findNumberOccurringOddTimes, findNumberOccurringOddTimesImproved}
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 
 class Evaluation(implicit spark: SparkSession) {
@@ -17,13 +17,14 @@ class Evaluation(implicit spark: SparkSession) {
    *  (does not require shuffling partitions)
    */
   def algorithmV1(dataset: Dataset[Row]): Dataset[KeyValuePair]  =
-    dataset
-      .as[(Int, Int)]
-      .rdd
-      .groupByKey()
-      .map { elem => elem._1 -> findNumberOccuringOddTimes(elem._2)}
-      .toDF("key", "value")
-      .as[KeyValuePair]
+    algorithmV1Parent(dataset, findNumberOccurringOddTimes)
+
+  /**
+   * V1 algorithm, but the 2) step requires only O(1) space,
+   * since it only uses XOP operation and no in-between data structure is used
+   */
+  def algorithmV1b(dataset: Dataset[Row]): Dataset[KeyValuePair]  =
+    algorithmV1Parent(dataset, findNumberOccurringOddTimesImproved)
 
   /**
    * Better approach using AggregateFunction with similar, O(N) complexity, but without data shuffling
@@ -36,9 +37,20 @@ class Evaluation(implicit spark: SparkSession) {
      typedDataset
        .select(aggregateFunction)
        .take(1)
-       .head //.head is safe here, because it is guaranteed to have a result
+       .headOption
+       .getOrElse(Map.empty[Int, Int])
        .toSeq
        .toDF("key", "value")
        .as[KeyValuePair]
+  }
+
+  private def algorithmV1Parent(dataset: Dataset[Row], algorithm: Iterable[Int] => Int) = {
+    dataset
+      .as[(Int, Int)]
+      .rdd
+      .groupByKey()
+      .map { elem => elem._1 -> algorithm(elem._2)}
+      .toDF("key", "value")
+      .as[KeyValuePair]
   }
 }

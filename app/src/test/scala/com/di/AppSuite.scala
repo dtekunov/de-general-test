@@ -3,9 +3,8 @@
  */
 package com.di
 
-import com.di.io.KeyValuePair
+import com.di.io.{IO, KeyValuePair}
 import com.di.logic.Evaluation
-import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.{Level, LogManager, Logger}
 import org.apache.spark.SparkException
 import org.apache.spark.sql.SparkSession
@@ -16,13 +15,53 @@ import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class AppSuite extends AnyFunSuite with Matchers {
-  val config: Config = ConfigFactory
-    .load("application.conf")
-    .getConfig("main")
-
   val logger: Logger = LogManager.getRootLogger
   logger.setLevel(Level.WARN)
+  import AppSuite._
+  import spark.implicits._
 
+  test("All Algorithms should work correctly on a base case") {
+    val (result1, result2, result3) = {
+      val evaluation = new Evaluation
+      (evaluation.algorithmV1(testValues1).collect(),
+        evaluation.algorithmV2(testValues1).collect(),
+        evaluation.algorithmV1b(testValues1).collect())
+    }
+
+    result1 must contain theSameElementsAs result2
+    result1 must contain theSameElementsAs result3
+    result1 must contain theSameElementsAs Array(KeyValuePair(1, 2), KeyValuePair(2, 4))
+  }
+
+  test("Algorithm V1 should fail on non-valid data") {
+    val evaluation = new Evaluation
+
+    assertThrows[SparkException] {
+        evaluation.algorithmV1(invalidValues).collect()
+    }
+  }
+
+  test("All Algorithms should work correctly with a random input") {
+
+    for (_ <- 1 to 3) { // just to be sure  inn consistency, we run this test several times
+      val values = TestValuesGenerator.generateRandomTestInput
+
+      val (result1, result2, result3) = {
+        val evaluation = new Evaluation
+
+        (evaluation.algorithmV1(values.allValues.toDF("key", "value")).collect(),
+          evaluation.algorithmV2(values.allValues.toDF("key", "value")).collect(),
+          evaluation.algorithmV1b(values.allValues.toDF("key", "value")).collect())
+      }
+
+      result1 must contain theSameElementsAs values.valuesToFind
+      result1 must contain theSameElementsAs result2
+      result1 must contain theSameElementsAs result3
+    }
+  }
+}
+
+object AppSuite {
   implicit val spark: SparkSession = SparkSession
     .builder()
     .appName("test")
@@ -31,49 +70,17 @@ class AppSuite extends AnyFunSuite with Matchers {
 
   import spark.implicits._
 
-  test("All Algorithms should work correctly on a base case") {
-    val values = Seq(
-      (1, 2),
-      (1, 3),
-      (1, 3),
-      (2, 4),
-      (2, 4),
-      (2, 4)
-    ).toDF("key", "value")
+  val testValues1 = Seq(
+    (1, 2),
+    (1, 3),
+    (1, 3),
+    (2, 4),
+    (2, 4),
+    (2, 4)
+  ).toDF("key", "value")
 
-    val (result1, result2) = {
-      val evaluation = new Evaluation
-
-      (evaluation.algorithmV1(values).collect(), evaluation.algorithmV2(values).collect())
-    }
-
-    result1 must contain theSameElementsAs result2
-    result1 must contain theSameElementsAs Array(KeyValuePair(1, 2), KeyValuePair(2, 4))
-  }
-
-  test("All Algorithms should fail on non-valid data") {
-    val values = Seq(
-      (1, 2),
-      (1, 2),
-    ).toDF("key", "value")
-    val evaluation = new Evaluation
-
-    assertThrows[SparkException] {
-        evaluation.algorithmV1(values).collect()
-    }
-  }
-
-  test("All Algorithms should work correctly with a random input") {
-    val values = TestValuesGenerator.generateRandomTestInput
-
-    val (result1, result2) = {
-      val evaluation = new Evaluation
-
-      (evaluation.algorithmV1(values.allValues.toDF("key", "value")).collect(),
-        evaluation.algorithmV2(values.allValues.toDF("key", "value")).collect())
-    }
-
-    result1 must contain theSameElementsAs values.valuesToFind
-    result1 must contain theSameElementsAs result2
-  }
+  val invalidValues = Seq(
+    (1, 2),
+    (1, 2),
+  ).toDF("key", "value")
 }

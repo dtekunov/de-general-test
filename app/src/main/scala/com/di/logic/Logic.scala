@@ -6,8 +6,9 @@ import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
 import org.apache.spark.sql.expressions.Aggregator
 
 object Logic {
+  private type AggregateAccumulator = Map[KeyValuePair, Int]
 
-  def findNumberOccuringOddTimes(numbers: Iterable[Int]): Int = {
+  def findNumberOccurringOddTimes(numbers: Iterable[Int]): Int = {
     numbers.foldLeft(Map.empty[Int, Int]) { (acc, elem) =>
       val oldValue = acc.getOrElse(elem, 0)
 
@@ -18,10 +19,12 @@ object Logic {
       ._1
   }
 
-  // Hashmap's keys represent numbers and values - number of occurrences
-  object AggregateValues extends Aggregator[KeyValuePair, Map[KeyValuePair, Int], Map[Int, Int]] {
-    type AggregateAccumulator = Map[KeyValuePair, Int]
+  def findNumberOccurringOddTimesImproved(numbers: Iterable[Int]): Int = {
+    numbers.foldLeft(0)((acc, elem) => acc ^ elem)
+  }
 
+  // Hashmap's keys represent numbers and values - number of occurrences
+  object AggregateValues extends Aggregator[KeyValuePair, AggregateAccumulator, Map[Int, Int]] {
     def zero: AggregateAccumulator = Map.empty[KeyValuePair, Int]
 
     def reduce(accumulator: AggregateAccumulator, value: KeyValuePair): AggregateAccumulator = {
@@ -43,5 +46,4 @@ object Logic {
 
     def outputEncoder: Encoder[Map[Int, Int]] = ExpressionEncoder()
   }
-
 }
