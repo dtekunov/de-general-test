@@ -2,24 +2,26 @@ package com.di.io
 
 import org.apache.spark.sql.{Dataset, Row, SaveMode, SparkSession}
 
+import scala.util.{Failure, Try}
+
 class IO(isS3: Boolean)(implicit spark: SparkSession) {
 
-  def readDataset(inputDir: String): Dataset[Row] =
-    if (!isS3) {
+  def readDataset(inputDir: String): Try[Dataset[Row]] =
+    if (!isS3) Try {
       val csvPart = readLocal(inputDir, "csv")
       val tsvPart = readLocal(inputDir, "tsv")
       csvPart.union(tsvPart)
-    } else throw new Exception("Reading from S3 is not supported yet")
+    } else Failure(new Exception("Reading from S3 is not supported yet"))
 
 
-  def writeDataset(dataset: Dataset[KeyValuePair], outputDir: String): Unit =
-    if (!isS3)
+  def writeDataset(dataset: Dataset[KeyValuePair], outputDir: String): Try[Unit] =
+    if (!isS3) Try {
       dataset
         .write
         .option("header", "true")
         .option("sep", "\t")
         .mode(SaveMode.Overwrite).csv(s"$outputDir.tsv")
-    else throw new Exception("Writing to S3 is not supported yet")
+    } else Failure(new Exception("Writing to S3 is not supported yet"))
 
   private def readLocal(pathToDirectory: String, format: String) = {
     val separator = format match {

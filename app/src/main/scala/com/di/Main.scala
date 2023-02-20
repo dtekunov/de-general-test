@@ -6,10 +6,12 @@ import org.apache.log4j.{LogManager, Logger}
 import org.apache.spark.sql.SparkSession
 import scopt.OptionParser
 
+import scala.util.{Failure, Success}
+
 object Main extends App {
   val logger: Logger = LogManager.getRootLogger
 
-  val parser = new OptionParser[Arguments]("Marketing Analytics") {
+  val parser = new OptionParser[Arguments]("de-test") {
     opt[String]('i', "input")
       .required()
       .valueName("Path for a given input file")
@@ -38,11 +40,17 @@ object Main extends App {
     val io = new IO(args.isS3)
     val evaluation = new Evaluation
 
-    val dataset = io.readDataset(args.input)
-
-    val result = evaluation.algorithmV2(dataset)
-
-    io.writeDataset(result, args.output)
+    io.readDataset(args.input) match {
+      case Success(dataset) =>
+        val result = evaluation.algorithmV2(dataset)
+        io.writeDataset(result, args.output) match {
+          case Success(_) =>
+            logger.info("Output data successfully written")
+          case Failure(ex) =>
+            logger.error(s"Failed to write data due to $ex")
+        }
+      case Failure(ex) => throw new Exception(s"Data read failed with $ex")
+    }
   }
 
 

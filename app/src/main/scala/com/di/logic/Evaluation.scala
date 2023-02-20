@@ -26,8 +26,7 @@ class Evaluation(implicit spark: SparkSession) {
       .as[KeyValuePair]
 
   /**
-   * Another approach using AggregateFunction with similar, O(N) complexity, but not that heavy,
-   * since data shuffling is not applied
+   * Better approach using AggregateFunction with similar, O(N) complexity, but without data shuffling
    */
   def algorithmV2(dataset: Dataset[Row]): Dataset[KeyValuePair] = {
     val typedDataset = dataset.as[KeyValuePair]
@@ -42,5 +41,4 @@ class Evaluation(implicit spark: SparkSession) {
        .toDF("key", "value")
        .as[KeyValuePair]
   }
-
 }
